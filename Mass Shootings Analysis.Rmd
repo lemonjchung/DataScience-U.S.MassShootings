@@ -1,0 +1,291 @@
+---
+title: "U.S Mass Shootings Analysis"
+author: "Tianyi Wang; Xiaoqian Sun; Yeon Kyung Chung; Yon Ho Cheong"
+date: "11/19/2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#####__Mass Shootings Data Analysis__
+
+Our dataset is the data of Mass Shootings in the United States of America during 1966 to 2017. It has included 398 mass shootings in last 50 years in the United States. The total victims are 1,996 deaths and 2,488 injured. Just two months ago, the latest and the worst mass shooting happened on October 2 which 59 people lost their lives and 546 people were injured as a result of the shooting. (Wikipedia) 
+
+According to our dataset, it is clear to see mass shootings in the United States have unfortunately become a disturbing trend that seems to be on the rise. During 2012 to 2017, there have 190 mass shootings out of the total of 324(1966-2017) which it is around 58.6%.Besides the original dataset, we added several related datasets to enrich analysis for independent variables: the number of total federal firearms licensees, number of internet users, gross domestic product(GDP) and the number of drugs arrested, divided the mass shootings by regions and U.S. population. Through these variables we can make the different models to analysis the mass shootings. 
+
+Although all the important variables have been broadly found in research, in this project, Since the majority of our dataset happens after 2000, so we decided to target the data which starts from the year 2000 to do the analysis. In this report, we are going to contribute different independent and dependent variables from our dataset in order to find the relationship among these mass shootings in the United States.
+
+__1.	How did you develop your question and what relevant research has already been completed on this topic?__
+
+There are some of the relevant research has already been completed on mass shootings such as mass shooting with media coverage; mass shootings and mental illness; mass shootings and psychotropic drugs. In our dataset, we want to learn which national trends influence the mass shooting most, and we want to figure out how to minimize the number of mass shooting. We try to use EDA process to explore, learn about and get an outline of the dataset, and even to find out whether there is other information we need to complete the research. At first, we try to find the pattern of mass shooting and find out the safest place to live in, but we cannot make any prediction from the results. Then we decide to find the national trends which contribute the most to the number of mass shootings. We developed our datasets and come out our final question: how to minimize the number of total victims in the mass shooting? 
+
+__2.	How did you gather and prepare the data for analysis?__
+
+At the beginning, we were trying to find the pattern of mass shooting, but we find out that it is not possible to make any prediction and promotion from the original dataset. That's the reason that we started collecting other information from different government websites. We created variables such as GDP, population, drug arrested, and firearms license. 
+
+Since the most of the mass shootings happened after 2000, so we choose the dataset with our variables. All of our variables are numeric, so we are possible to use linear regression to study the relationship between these factors. It will help us to find the national trends which might contribute most to the number of mass shootings in the United States. 
+
+__3.	How did you select and determine the correct regression model to answer your question?__
+
+We considered all possible model, such as Linear regression, Logistic regression, KNN, K-Mean and Decision Trees. However, our data is all continuous variables and the dependent variable is Total number of Victims. For the reason, my team decided “Linear Regression Model” to use our answer.
+
+__4.	How reliable are your results?__
+
+Our dependent variable is Total number of victims. As linear regress model assumption, the dependent variable should be a normal distribution. Yet, the predict variable is not a normal distribution. So, we checked residuals and it is a normal distribution. Also, based on linear regression model assumptions, independent variables should not be correlated. Our independent variables are correlated. That’s the reason we made 4 individual linear regression models. Our team used in-place predict and RMSE was high value. Thus, our models do not a perfect model.
+
+__5.	What predictions can you make with your model?__
+
+Model of the number of shootings with the total victims is significant. That's why we use it and predict and evaluate the data. For example, there is the lowest error value in 2011 that means our prediction for total victims is more accurate. In addition, RMSE is a very useful way for evaluating a model, because our RMSE values divided by the degrees of freedom are around 2 which is good. All four variables(federal firearms licensees, number of internet users, number of shootings and U.S.population) is significant and prediction to evaluating the model. Through the linear regression model, we can predict all of the variables will increase for the next year. 
+
+__6.	What additional information or analysis might improve your model results or work to control limitations?__
+
+In our mass shooting dataset, mass shooting is increased dramatically after 2015. It hard for us to analysis the exact reason for the mass shooting because we only have a couple of years data. In addition, some of the data is hard to find and track. For example, the number of internet users and drug arrest data, we only have the years after 2000. This quality of this dataset also needs to updates too.  In the original dataset, over the half of the data in mental health are unclear. There also need to put the reason why the mass killers did that so that we can focus on specific areas to prevent these mass shooting. 
+
+
+__Conclusion__：
+
+To sum up, Federal firearms licensees, number of internet users, U.S. population and number of shootings are significant to the mass shootings. It is challenging for Mass shootings in the United States because it seems to have different views. Some of the young people think having a gun will solve their problem. In our dataset, there have young individuals that are enlightened or inspired to copy off of another mass killers. It is hard to track the data for these copycat crimes.  In addition, gun control always is a big problem in the United States. Some areas may have problems with security in making it easy for anyone with a concealed weapon to enter in. It brings another question for the argument: is it too easy for American to get a gun? Excepts these, there are still lots of reasons might cause the mass shooting such as mental health and the media contagion effect. It is the reality that younger audiences are being exposed to. In the meantime, we need to focus on teaching people how to stay safe and how to get help for the mental disease which might help to prevent other mass shootings.
+
+
+
+> Mass Shootings Data Analysis in R 
+
+##### 1. Read Data and remove outliers 
+##### 2. EDA
+  + Check Normal distribution: Histogram
+  + Correlation
+
+##### 3. Make a Model fotr the dataset
+  + __Dependent variable(y)__   : Total victims
+  + __Independet variables(x)__ : number of Mass Shooting, Population, GDP
+                                  number of Internet Users, number of Firearms Licensees
+  + Make a model: Linear regression
+  + Measure the error rate of a regression model: RMSE
+  
+  
+###### =================Load & Prep Dataset==========================
+
+```{r}
+library(dplyr)
+library(car) 
+library(fmsb)
+library(corrplot)
+library(RColorBrewer)
+library(gdata)
+
+yeardata <- data.frame(read.xls("Mass Shootings Dataset.xlsx", 
+                       sheet = "Mass Shootings Yearly", header = TRUE))
+head(yeardata)
+str(yeardata)
+
+Year <- yeardata$Year
+NoShooting <- yeardata$No..Mass.Shooting
+TotalVictims <- yeardata$Total.victims
+Gdp <- yeardata$Real.GDP
+Population <- yeardata$US.Population
+RegionWest <- yeardata$No..In.WEST
+RegionMidWest <- yeardata$No..In.MIDWEST
+InternetUsers <- yeardata$Internet.Users
+RegionNorthEast <- yeardata$No..In.NORTHEAST
+RegionSouth <- yeardata$No..In.SOUTH
+FirearmsLicensees <- yeardata$Federal.Firearms.Licensees.Total
+FirearmsImports <- yeardata$Firearms.Imports
+
+# ====== subset dataset
+# subset data after the year of 2012 - 2017
+
+yeardata_after2012 = data.frame(subset(yeardata, `Year` >= 2012 ))
+str(yeardata_after2012)
+
+# ====== Mass Shootings Dataset
+shootingdata <- data.frame(read.xls("Mass Shootings Dataset.xlsx", 
+                       sheet = "Mass Shootings Dataset", header = TRUE))
+head(shootingdata)
+```
+
+###### ========================EDA===================================
+
+```{r}
+par(mar = rep(2, 4))
+
+# Total Victims: Dependent variable
+hist(TotalVictims)
+boxplot(TotalVictims)
+
+# Remove outliers of Total Victims from 2015 - 2017
+yeardata_RemoveOutliers <- yeardata[3:length(yeardata), ]
+yeardata_RemoveOutliers
+boxplot(yeardata_RemoveOutliers$Total.victims)
+hist(yeardata_RemoveOutliers$Total.victims)
+
+# Correlation between independent variables
+cordata <- data.frame(TotalVictims, NoShooting, Population, InternetUsers, FirearmsLicensees)
+shootingcor <- cor(cordata)
+shootingcor
+corrplot(shootingcor, type="lower", addCoef.col= "black", 
+         order="hclust",  col=brewer.pal(n=8, name="RdYlBu"), tl.col="black",tl.srt=45)
+
+
+# Check the Dependent variable is "Normal Distribution" or not
+lm <- lm(TotalVictims~NoShooting, yeardata)
+qqnorm(TotalVictims, main="Normal QQ plot for Total Victims")
+qqline(TotalVictims)
+
+lm <- lm(yeardata_RemoveOutliers$Total.victims~yeardata_RemoveOutliers$No..Mass.Shooting, yeardata_RemoveOutliers)
+qqnorm(yeardata_RemoveOutliers$Total.victims, main="Normal QQ plot for Total Victims")
+qqline(yeardata_RemoveOutliers$Total.victims)
+
+qqnorm(lm$residuals, main="Normal QQ plot for residuals")
+qqline(lm$residuals)
+
+hist(yeardata_RemoveOutliers$Total.victims)
+hist(lm$residuals)
+shapiro.test(lm$residuals)
+shapiro.test(yeardata_RemoveOutliers$Total.victim)
+```
+
+###### ==================Linear Regression==========================
+
+```{r}
+# Create Model for the dataset: using Linear regression model
+# Total victims: dependent variable
+set.seed(5)
+lm_model <- lm(TotalVictims~Population+NoShooting+InternetUsers+FirearmsLicensees,  data = yeardata)  
+summary(lm_model)
+
+### According to the results, our Independent variables are related to each other, so we had to try different models. 
+cor(Population, NoShooting)
+cor(InternetUsers+FirearmsLicensees, NoShooting)
+
+####### Create a Funciton: Predict and Evaluate the Model(RMSE)
+prec_func <- function(linear_model, original_data){  
+  #--- Predict In-place
+  predictions <- predict(linear_model, yeardata)
+  head(predictions)
+  lm_shooting_pred <- data.frame(predictions,TotalVictims)
+  
+  lm_shooting_pred <- mutate(lm_shooting_pred, TotalVictims-predictions)
+  names(lm_shooting_pred) <- c("prediction","totalvictims","error")
+  print(head(lm_shooting_pred))
+  #print(lm_shooting_pred$error)
+  
+  #--- Evaluate the model: RMSE
+  mse <- data.frame(mean((lm_shooting_pred$error)^2))
+  rmse_shootingestate <- sqrt(mse)
+  #names(rmse_shootingestate) <- c("RMSE")
+  print(rmse_shootingestate)
+  print(VIF(linear_model))
+}
+
+# Make a model, Predict and Evalute the model 
+lm_model <- lm(TotalVictims~Population,  data = yeardata)  
+summary(lm_model)
+# call the funciton for prediction and evaluation 
+prec_func(lm_model, yeardata)
+
+
+lm_model2 = lm(TotalVictims~NoShooting,  data = yeardata)  
+summary(lm_model2)
+# call the funciton for prediction and evaluation 
+prec_func(lm_model2, yeardata)
+
+
+lm_model3 <- lm(TotalVictims~InternetUsers, data = yeardata)
+summary(lm_model3)
+# call the funciton for prediction and evaluation 
+prec_func(lm_model3, yeardata)
+
+
+lm_model4 <- lm(Total.victims~FirearmsLicensees, data = yeardata)
+summary(lm_model4)
+# call the funciton for prediction and evaluation 
+prec_func(lm_model4, yeardata)
+
+
+lm_model5 <- lm(Total.victims~RegionMidWest+RegionNorthEast
+                          +RegionSouth+RegionWest, data = yeardata)
+summary(lm_model5)
+
+#subset
+attach(yeardata_after2012)
+names(yeardata_after2012)
+
+lm_model_subset2 = lm(Total.victims~No..In.MIDWEST , data=yeardata_after2012)  
+summary(lm_model_subset2)
+```
+
+
+###### =================Plot Linear regression==========================
+
+```{r}
+#linear regression model: Total victims with the number of shootings
+
+scatterplot(TotalVictims ~ NoShooting, data=yeardata, 
+  	xlab="Number of Mass Shooting", ylab="Total victims", 
+   main="Total Victims ~ Number of Mass Shooting", 
+   labels=row.names(yeardata))
+
+#linear regression model: Total victims with population
+scatterplot(TotalVictims ~ Population, data=yeardata, 
+  	xlab="Population", ylab="Total victims", 
+   main="Total Victims ~ Population", 
+   labels=row.names(yeardata))
+
+#linear regression model: Total victims with the number of the internet users
+scatterplot(TotalVictims ~ InternetUsers, data=yeardata, 
+  	xlab="InternetUsers", ylab="Total victims", 
+   main="Total Victims ~ Internet Users", 
+   labels=row.names(yeardata))
+
+#linear regression model: Total victims with the number of Firearms Licensees
+scatterplot(TotalVictims ~ FirearmsLicensees, data=yeardata, 
+  	xlab="FirearmsLicensees", ylab="Total victims", 
+   main="Total Victims ~ FirearmsLicensees", 
+   labels=row.names(yeardata))
+
+#linear regression line is in green
+#The red lines are lOWESS (Locally Weighted Scatterplot Smoothing), which is used to create a smooth line through a timeplot or scatter plot. It would help you to check the relationship of variables and forecast the trends.
+
+```
+
+######==================Geo Map(leaflet)=======================================
+
+```{r}
+if(!require(leaflet)) install.packages("leaflet")
+library(leaflet)
+
+###### Create a funciton: Make a Geo Map
+MassShootingMap <- function(massshootingdata) {
+    leaflet(data = massshootingdata) %>% 
+      addProviderTiles(providers$CartoDB.DarkMatter, group="Dark") %>%
+      addProviderTiles(providers$CartoDB.Positron, group="Light") %>%
+      addLayersControl(baseGroups=c('Dark','Light')) %>%
+      addTiles() %>%
+            addMarkers(~Longitude, ~Latitude, 
+                 clusterOptions = markerClusterOptions(),
+                 popup = ~as.character(Title), 
+                 label = ~as.character(Location))
+}
+
+## Total Mass Shootings Geo map
+# call a funciton to create GeoMap
+MassShootingMap(shootingdata)
+
+## 2015 Geo map
+shootingdata_2015 <- subset(shootingdata, shootingdata$Year == 2015)
+str(shootingdata_2015)
+# call a funciton to create GeoMap
+MassShootingMap(shootingdata_2015)
+
+## 2016 Geo map
+shootingdata_2016 <- subset(shootingdata, shootingdata$Year == 2016)
+str(shootingdata_2016)
+# call a funciton to create GeoMap
+MassShootingMap(shootingdata_2016)
+
+```
+
+
